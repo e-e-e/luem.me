@@ -12,7 +12,7 @@ export interface LuemmeSocket {
 
 export function createWsClient(room: string): LuemmeSocket {
   console.log(process.env.SOCKET_PORT)
-  const socket = io( { path: '/io', port: process.env.SOCKET_PORT || '3000' })
+  const socket = io( { path: '/io', port: process.env.SOCKET_PORT })
   socket.on('connect', () => {
     // register with server - requesting to join a room with a name
     // server replies - with secret to be used on reconnect, to keep the name the same
