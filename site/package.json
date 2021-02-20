@@ -1,0 +1,22 @@
+{
+  "name": "luem.me.site",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "parcel src/index.html",
+    "build": "parcel build --no-minify --no-source-maps src/index.html"
+  },
+  "engines": {
+    "node": ">=15"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "pdfjs-dist": "^2.6.347",
+    "socket.io-client": "^3.1.1"
+  },
+  "devDependencies": {
+    "@types/pdfjs-dist": "^2.1.7",
+    "parcel-bundler": "^1.12.4",
+    "typescript": "^4.1.5"
+  }
+}

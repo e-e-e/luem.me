@@ -1,0 +1,26 @@
+{
+  "name": "luem.me",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "yarn start:backend",
+    "build": "yarn build:frontend && yarn build:backend",
+    "start:backend": "cd server && yarn start",
+    "build:frontend": "cd site && yarn build",
+    "build:backend": "cd server && yarn build"
+  },
+  "engines": {
+    "node": ">=15"
+  },
+  "workspaces": [
+    "site",
+    "server"
+  ],
+  "private": true,
+  "license": "MIT",
+  "dependencies": {
+  },
+  "devDependencies": {
+    "typescript": "^4.1.5"
+  }
+}
