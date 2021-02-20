@@ -8,7 +8,7 @@ async function start() {
   const socket = createWsClient('hello');
   const { load, container } = installPdfViewer(document.body, socket)
   installViewportSync( container, socket)
-  installCursorSync(socket)
+  installCursorSync(container, socket)
   const url = 'https://arena-attachments.s3.amazonaws.com/8434432/a9441e82740552c905c92fcdb2fca3ee.pdf'
   await load(text);
 }
