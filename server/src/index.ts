@@ -54,11 +54,12 @@ io.on("connection", socket => {
     socket.join(room)
   })
   socket.on('position', (y: number) => {
-
     socket.to('hello').emit('position', y);
   })
+  socket.on('zoom', (scale: number) => {
+    socket.to('hello').emit('zoom', scale);
+  })
   socket.on('cursor', (x: number, y: number) => {
-
     socket.to('hello').emit('cursor', socket.id, x, y);
   })
 });

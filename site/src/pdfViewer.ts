@@ -14,7 +14,13 @@ export function createPdfViewContainer() {
   return container
 }
 
+const DEFAULT_SCALE_DELTA = 1.1
+const MAX_SCALE = 4
+const MIN_SCALE = 0.2
+
 export function installPdfViewer(root: HTMLElement, socket: LuemmeSocket) {
+  let scale = 1
+
   const container = createPdfViewContainer()
   root.appendChild(container)
 
@@ -67,6 +73,45 @@ export function installPdfViewer(root: HTMLElement, socket: LuemmeSocket) {
     pdfLinkService.setDocument(pdfDocument, null);
     socket.loaded(url);
   }
+
+  const zoomIn = (ticks: number) => {
+    let newScale = pdfViewer.currentScale;
+    do {
+      newScale = (newScale * DEFAULT_SCALE_DELTA).toFixed(2);
+      newScale = Math.ceil(newScale * 10) / 10;
+      newScale = Math.min(MAX_SCALE, newScale);
+    } while (--ticks > 0 && newScale < MAX_SCALE);
+    pdfViewer.currentScaleValue = newScale;
+    scale = newScale
+    socket.zoom(scale)
+  }
+
+  const zoomOut = (ticks: number) => {
+    var newScale = pdfViewer.currentScale;
+    do {
+      newScale = (newScale / DEFAULT_SCALE_DELTA).toFixed(2);
+      newScale = Math.floor(newScale * 10) / 10;
+      newScale = Math.max(MIN_SCALE, newScale);
+    } while (--ticks > 0 && newScale > MIN_SCALE);
+    pdfViewer.currentScaleValue = newScale;
+    scale = newScale
+    socket.zoom(scale)
+  }
+  socket.onZoom((s => {
+    pdfViewer.currentScaleValue = s
+    scale = s
+  }))
+
+  const scaleControls = document.createElement('div')
+  scaleControls.id = 'scale-controls'
+  const plus = document.createElement('button')
+  plus.innerText = '+'
+  plus.addEventListener('click', () => zoomIn(1))
+  const minus = document.createElement('button')
+  minus.innerText = '-'
+  minus.addEventListener('click', () => zoomOut(1))
+  scaleControls.append(minus, plus)
+  container.append(scaleControls)
 
   return {
     load,

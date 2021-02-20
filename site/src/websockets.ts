@@ -5,7 +5,8 @@ export interface LuemmeSocket {
   loaded: (url: string) => void
   position: (y: number) => void
   onPosition: (handler: (y: number) => void) => void
-
+  zoom: (scale: number) => void
+  onZoom: (handler: (scale: number) => void) => void
   cursor: (x: number, y: number) => void
   onCursor: (handler: (user: string, x: number, y: number) => void) => void
 }
@@ -40,7 +41,8 @@ export function createWsClient(room: string): LuemmeSocket {
 
     position: (y: number) => socket.volatile.emit('position', y),
     onPosition: (handler: (y: number) => void) => socket.on('position', handler),
-
+    zoom: (scale: number) => socket.volatile.emit('zoom', scale),
+    onZoom: (handler: (scale: number) => void) => socket.on('zoom', handler),
     cursor: (x: number, y: number) => socket.volatile.emit('cursor', x, y),
     onCursor: (handler: (user: string, x: number, y: number) => void) => socket.on('cursor', handler)
   }
