@@ -15,18 +15,19 @@ export function installCursorSync(container: HTMLElement, socket: LuemmeSocket) 
   let rect: DOMRect | null = null
 
   const updateCursor = (user: string, x: number, y: number) => {
-    const page = document.querySelector('#viewer .page');
-    if (!page) return
+    const page = container.querySelector('#viewer .page');
+    if (!page ) return
     const rect = page.getBoundingClientRect()
     const scaledX = percentageToPage(x, rect)
+    const scaledY = (y / 100) * container.scrollHeight - container.scrollTop
     const cursor = cursors.get(user);
     if (cursor) {
-      cursor.style.top = `${y-5}px`
+      cursor.style.top = `${scaledY-5}px`
       cursor.style.left = `${scaledX-5}px`
     } else {
       const cursor = document.createElement('div')
       cursor.style.position = 'absolute'
-      cursor.style.top = `${y-8}px`
+      cursor.style.top = `${scaledY-8}px`
       cursor.style.left = `${scaledX-8}px`
       cursor.style.background = `url(${Icon})`
       cursor.style.width = '22px'
@@ -37,12 +38,13 @@ export function installCursorSync(container: HTMLElement, socket: LuemmeSocket) 
   }
 
   window.addEventListener('mousemove', (e) => {
-    const page = document.querySelector('#viewer .page');
+    const page = container.querySelector('#viewer .page');
     if (!page) return
     rect = page.getBoundingClientRect()
-    const p = pageToPercentage(e.pageX, rect)
+    const x = pageToPercentage(e.pageX, rect)
+    const y = ((e.pageY + container.scrollTop) / container.scrollHeight) * 100
     // console.log(e.pageX,p, percentageToPage(p, rect))
-    socket.cursor(p, e.pageY)
+    socket.cursor(x, y)
   })
   socket.onCursor(updateCursor)
 }

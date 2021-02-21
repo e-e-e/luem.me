@@ -97,10 +97,10 @@ export function installPdfViewer(root: HTMLElement, socket: LuemmeSocket) {
     scale = newScale
     socket.zoom(scale)
   }
-  socket.onZoom((s => {
-    pdfViewer.currentScaleValue = s
-    scale = s
-  }))
+  // socket.onZoom((s => {
+  //   pdfViewer.currentScaleValue = s
+  //   scale = s
+  // }))
 
   const scaleControls = document.createElement('div')
   scaleControls.id = 'scale-controls'
