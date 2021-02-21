@@ -1,4 +1,4 @@
-import {LuemmeSocket} from "./websockets";
+import {LuemmeSocket} from "./luemmeSocket";
 import Icon from './images/cursor.svg';
 
 function pageToPercentage(x: number, rect: DOMRect ) {
@@ -41,7 +41,7 @@ export function installCursorSync(container: HTMLElement, socket: LuemmeSocket) 
     if (!page) return
     rect = page.getBoundingClientRect()
     const p = pageToPercentage(e.pageX, rect)
-    console.log(e.pageX,p, percentageToPage(p, rect))
+    // console.log(e.pageX,p, percentageToPage(p, rect))
     socket.cursor(p, e.pageY)
   })
   socket.onCursor(updateCursor)

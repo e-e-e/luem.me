@@ -1,6 +1,17 @@
 import {io} from "socket.io-client";
 
+//TODO: move to a common src directory
+export type UserInfo = {
+  room: string;
+  name: string;
+  id: string;
+}
+
 export interface LuemmeSocket {
+  join: (room: string) => void
+  onJoined: (handler: (user: UserInfo, readers: UserInfo[]) => void) => void
+  onUserJoined: (handler: (name: string) => void) => void
+  onUserLeft: (handler: (name: string) => void) => void
   loading: (percent: number) => void
   loaded: (url: string) => void
   position: (y: number) => void
@@ -11,34 +22,21 @@ export interface LuemmeSocket {
   onCursor: (handler: (user: string, x: number, y: number) => void) => void
 }
 
-export function createWsClient(room: string): LuemmeSocket {
-  console.log(process.env.SOCKET_PORT)
-  const socket = io( { path: '/io', port: process.env.SOCKET_PORT })
+export function installLuemmeSocket(): LuemmeSocket {
+  const socket = io({path: '/io', port: process.env.SOCKET_PORT})
   socket.on('connect', () => {
-    // register with server - requesting to join a room with a name
-    // server replies - with secret to be used on reconnect, to keep the name the same
-    socket.emit('join', room)
+    // register wit
   })
+  // server replies - with secret to be used on reconnect, to keep the name the same
 
-  // socket.connected
 
-  // Listening:
-  // loaded: user, boolean
-  // loading: user, percentage
-  // joined: user
-  // position: user, x, y, zoom
-
-  // Actions:
-  // loading - percentage
-  // loaded - boolean
-  // position - x, y, zoom
-  // requestControl
-  // relinquishControl
-  socket.on('position', () => console.log('ok'))
   return {
+    join: (room: string) => socket.emit('user.join', room),
+    onJoined: (handler: (user: UserInfo, readers: UserInfo[]) => void) => socket.on('user.join.success', handler),
+    onUserJoined: (handler: (name: string) => void) => socket.on('user.joined', handler),
+    onUserLeft: (handler: (name: string) => void) => socket.on('user.left', handler),
     loading: (percent: number) => socket.volatile.emit('loading', percent),
     loaded: (url: string) => socket.emit('loaded', url),
-
     position: (y: number) => socket.volatile.emit('position', y),
     onPosition: (handler: (y: number) => void) => socket.on('position', handler),
     zoom: (scale: number) => socket.volatile.emit('zoom', scale),

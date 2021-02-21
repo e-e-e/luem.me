@@ -1,4 +1,4 @@
-import {LuemmeSocket} from "./websockets";
+import { LuemmeSocket } from "./luemmeSocket";
 
 export function installViewportSync(container: HTMLElement, socket: LuemmeSocket) {
   let scrollLock = false
@@ -7,14 +7,16 @@ export function installViewportSync(container: HTMLElement, socket: LuemmeSocket
     const target = e.target;
     if( !(target instanceof HTMLElement)) return
     const scrollPercentage = (target.scrollTop / (target.scrollHeight - target.offsetHeight)) * 100;
-    console.log('sending', scrollPercentage)
+    // console.log('sending', scrollPercentage)
     socket.position(scrollPercentage)
   })
+
   let scrollLockTimer: number = 0
+
   socket.onPosition((y) => {
     // do not emit
     clearTimeout(scrollLockTimer)
-    console.log('automatically scrolling to', y)
+    // console.log('automatically scrolling to', y)
     scrollLock = true;
     const top = (y/100) * (container.scrollHeight - container.offsetHeight)
     container.scrollTo({ top: top, left: 0 })

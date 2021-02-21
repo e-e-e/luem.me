@@ -2,7 +2,7 @@ import * as pdfjs from "pdfjs-dist"
 import 'pdfjs-dist/build/pdf.worker.entry';
 import * as pdfjsViewer from 'pdfjs-dist/web/pdf_viewer';
 import 'pdfjs-dist/web/pdf_viewer.css';
-import {LuemmeSocket} from "./websockets";
+import {LuemmeSocket} from "./luemmeSocket";
 
 export function createPdfViewContainer() {
   const container = document.createElement('div')
