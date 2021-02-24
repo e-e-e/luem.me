@@ -51,6 +51,7 @@ export function installPdfViewer(root: HTMLElement, socket: LuemmeSocket) {
   let isLoaded = false;
 
   async function load(url: string) {
+    console.log('load', url)
     // TODO: clean up if already loaded
     isLoaded = false;
     socket.loading(0)
