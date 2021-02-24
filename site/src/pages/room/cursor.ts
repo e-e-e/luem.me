@@ -1,5 +1,5 @@
 import {LuemmeSocket} from "./luemmeSocket";
-import Icon from './images/cursor.svg';
+import Icon from '../../images/cursor.svg';
 
 function pageToPercentage(x: number, rect: DOMRect ) {
   return ((x - rect.x) / rect.width * 100)

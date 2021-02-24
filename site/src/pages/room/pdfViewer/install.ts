@@ -1,28 +1,21 @@
-import * as pdfjs from "pdfjs-dist"
-import 'pdfjs-dist/build/pdf.worker.entry';
-import * as pdfjsViewer from 'pdfjs-dist/web/pdf_viewer';
-import 'pdfjs-dist/web/pdf_viewer.css';
-import {LuemmeSocket} from "./luemmeSocket";
+import Inactive from "inactive";
+import { LuemmeSocket } from "../luemmeSocket";
+import { createPdfViewerContainer } from "./Viewer";
 
-export function createPdfViewContainer() {
-  const container = document.createElement('div')
-  container.id = 'viewerContainer';
-  const viewer = document.createElement('div')
-  viewer.id = 'viewer'
-  viewer.className = 'pdfViewer'
-  container.appendChild(viewer);
-  return container
-}
+import * as pdfjs from "pdfjs-dist"
+import * as pdfjsViewer from 'pdfjs-dist/web/pdf_viewer';
+
+import 'pdfjs-dist/build/pdf.worker.entry';
+import 'pdfjs-dist/web/pdf_viewer.css';
 
 const DEFAULT_SCALE_DELTA = 1.1
 const MAX_SCALE = 4
 const MIN_SCALE = 0.2
 
 export function installPdfViewer(root: HTMLElement, socket: LuemmeSocket) {
-  let scale = 1
-
-  const container = createPdfViewContainer()
-  root.appendChild(container)
+  const container = createPdfViewerContainer()
+  if(!(container instanceof HTMLElement)) throw new Error('expected component to return HTML element')
+  Inactive.mount(root, container)
 
   const eventBus = new pdfjsViewer.EventBus();
 
@@ -82,8 +75,6 @@ export function installPdfViewer(root: HTMLElement, socket: LuemmeSocket) {
       newScale = Math.min(MAX_SCALE, newScale);
     } while (--ticks > 0 && newScale < MAX_SCALE);
     pdfViewer.currentScaleValue = newScale;
-    scale = newScale
-    socket.zoom(scale)
   }
 
   const zoomOut = (ticks: number) => {
@@ -94,14 +85,7 @@ export function installPdfViewer(root: HTMLElement, socket: LuemmeSocket) {
       newScale = Math.max(MIN_SCALE, newScale);
     } while (--ticks > 0 && newScale > MIN_SCALE);
     pdfViewer.currentScaleValue = newScale;
-    scale = newScale
-    socket.zoom(scale)
   }
-  // socket.onZoom((s => {
-  //   pdfViewer.currentScaleValue = s
-  //   scale = s
-  // }))
-
   const scaleControls = document.createElement('div')
   scaleControls.id = 'scale-controls'
   const plus = document.createElement('button')
@@ -111,7 +95,7 @@ export function installPdfViewer(root: HTMLElement, socket: LuemmeSocket) {
   minus.innerText = '-'
   minus.addEventListener('click', () => zoomOut(1))
   scaleControls.append(minus, plus)
-  container.append(scaleControls)
+  container.appendChild(scaleControls)
 
   return {
     load,

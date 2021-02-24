@@ -24,6 +24,7 @@ const corsOptions = {
 app.use(cors(corsOptions))
 
 app.use("/", Express.static("../site/dist"))
+app.use("/:room", Express.static("../site/dist", { extensions: ['html']}))
 
 const acceptedHeaders = [
   'content-type',
@@ -105,15 +106,12 @@ io.on("connection", socket => {
     if (user) socket.to(user.room).emit('position', y);
   })
 
-  socket.on('zoom', (scale: number) => {
-    const user = sessions.get(socket)
-    if (user) socket.to(user.room).emit('zoom', scale);
-  })
-
   socket.on('cursor', (x: number, y: number) => {
     const user = sessions.get(socket)
     if (user) socket.to(user.room).emit('cursor', user.name, x, y);
   })
 });
 
-httpServer.listen(port);
+httpServer.listen(port, () => {
+  console.log('listening on port', port)
+});

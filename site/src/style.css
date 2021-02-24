@@ -20,3 +20,11 @@ body {
     bottom: 0;
     padding: 1rem;
 }
+
+input:invalid {
+    color: red;
+}
+
+input:valid {
+    color: green;
+}
