@@ -9,6 +9,12 @@ export type UserInfo = {
   id: string;
 }
 
+export type ReadingRoomState = {
+  name: string;
+  url: string | null;
+  scrollPosition: Position;
+}
+
 export const UserJoinMessage = 'user.join'
 
 export const UserJoinSuccessMessage = 'user.join.success'
@@ -16,6 +22,9 @@ export type UserJoinSuccessPayload = {
   whoami: UserInfo,
   readers: UserInfo[]
 }
+
+export const ReadingRoomStateMessage = 'room.state';
+export type ReadingRoomStatePayload = ReadingRoomState
 
 export const UserJoinedMessage = 'user.joined'
 export type UserJoinedPayload = UserInfo

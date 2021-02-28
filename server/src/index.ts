@@ -9,11 +9,11 @@ import cors from 'cors'
 import fetch from 'node-fetch'
 import {randomAnimal} from "./animals";
 import {
-  CursorPositionMessage,
+  CursorPositionMessage, ReadingRoomState, ReadingRoomStateMessage,
   ScrollPositionMessage,
   ScrollPositionPayload,
   SetCursorPositionMessage,
-  SetCursorPositionPayload,
+  SetCursorPositionPayload, UserInfo,
   UserJoinedMessage,
   UserJoinMessage,
   UserJoinSuccessMessage,
@@ -61,14 +61,13 @@ const io = new socketIO.Server(httpServer, {
   cors: corsOptions
 });
 
-//TODO: move to a common src directory
-type UserInfo = {
-  room: string;
-  name: string;
-  id: string;
-}
-
 const sessions = new WeakMap<Socket, UserInfo>()
+const readingRooms = new Map<string, ReadingRoomState>()
+
+function createReadingRoom(room: string) {
+  if (readingRooms.get(room)) return;
+  readingRooms.set(room, { name: room, scrollPosition: { x: 0, y: 0 }, url: null })
+}
 
 function createNewSession(socket: Socket, room: string) {
   const user = {
@@ -98,10 +97,24 @@ function leaveAllRooms(socket: Socket) {
   }
 }
 
+// Auto clean up of room states
+setInterval(() => {
+  const toRemove = []
+  for (let room of readingRooms.values()) {
+    const readers = io.sockets.adapter.rooms.get(room.name);
+    if (!readers || readers.size === 0) {
+      toRemove.push(room.name)
+    }
+  }
+  toRemove.forEach(id => readingRooms.delete(id));
+}, 5000)
+
 io.on("connection", socket => {
   socket.on(UserJoinMessage, (room: string) => {
     leaveAllRooms(socket)
     socket.leaveAll()
+    const readingRoom = readingRooms.get(room)
+
     const session = createNewSession(socket, room)
     const readers = getReadersInRoom(io, room)
     socket.join(room)
@@ -109,6 +122,11 @@ io.on("connection", socket => {
       whoami: session,
       readers,
     })
+    if (!readingRoom) {
+      createReadingRoom(room)
+    } else {
+      socket.emit(ReadingRoomStateMessage, readingRoom)
+    }
     socket.to(room).emit(UserJoinedMessage, session)
   })
 
