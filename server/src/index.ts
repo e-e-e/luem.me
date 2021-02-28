@@ -8,6 +8,17 @@ import * as socketIO from 'socket.io'
 import cors from 'cors'
 import fetch from 'node-fetch'
 import {randomAnimal} from "./animals";
+import {
+  CursorPositionMessage,
+  ScrollPositionMessage,
+  ScrollPositionPayload,
+  SetCursorPositionMessage,
+  SetCursorPositionPayload,
+  UserJoinedMessage,
+  UserJoinMessage,
+  UserJoinSuccessMessage,
+  UserLeftMessage
+} from "../../common/src/messages"
 
 const port = process.env.PORT || 3000
 
@@ -24,7 +35,7 @@ const corsOptions = {
 app.use(cors(corsOptions))
 
 app.use("/", Express.static("../site/dist"))
-app.use("/:room", Express.static("../site/dist", { extensions: ['html']}))
+app.use("/:room", Express.static("../site/dist", {extensions: ['html']}))
 
 const acceptedHeaders = [
   'content-type',
@@ -68,6 +79,7 @@ function createNewSession(socket: Socket, room: string) {
   sessions.set(socket, user);
   return user;
 }
+
 function getReadersInRoom(io: Server, room: string): UserInfo[] {
   const readers = io.sockets.adapter.rooms.get(room);
   if (!readers) return []
@@ -81,34 +93,37 @@ function getReadersInRoom(io: Server, room: string): UserInfo[] {
 function leaveAllRooms(socket: Socket) {
   for (const room of socket.rooms) {
     if (room !== socket.id) {
-      socket.to(room).emit("user.left", socket.id);
+      socket.to(room).emit(UserLeftMessage, socket.id);
     }
   }
 }
 
 io.on("connection", socket => {
-  socket.on('user.join', (room: string) => {
+  socket.on(UserJoinMessage, (room: string) => {
     leaveAllRooms(socket)
     socket.leaveAll()
     const session = createNewSession(socket, room)
     const readers = getReadersInRoom(io, room)
     socket.join(room)
-    socket.emit('user.join.success', session, readers)
-    socket.to(room).emit('user.joined', session)
+    socket.emit(UserJoinSuccessMessage, {
+      whoami: session,
+      readers,
+    })
+    socket.to(room).emit(UserJoinedMessage, session)
   })
 
   socket.on("disconnecting", () => {
     leaveAllRooms(socket)
   })
 
-  socket.on('position', (y: number) => {
+  socket.on(ScrollPositionMessage, (data: ScrollPositionPayload) => {
     const user = sessions.get(socket)
-    if (user) socket.to(user.room).emit('position', y);
+    if (user) socket.to(user.room).emit(ScrollPositionMessage, data);
   })
 
-  socket.on('cursor', (x: number, y: number) => {
+  socket.on(SetCursorPositionMessage, (data: SetCursorPositionPayload) => {
     const user = sessions.get(socket)
-    if (user) socket.to(user.room).emit('cursor', user.name, x, y);
+    if (user) socket.to(user.room).emit(CursorPositionMessage, {...data, id: user.id });
   })
 });
 

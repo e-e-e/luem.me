@@ -1,25 +1,43 @@
-import {io} from "socket.io-client";
+import {io, Socket} from "socket.io-client";
+import {Subject} from "rxjs";
+import {
+  CursorPositionMessage,
+  CursorPositionPayload,
+  ScrollPositionMessage,
+  ScrollPositionPayload,
+  SetCursorPositionMessage,
+  SetCursorPositionPayload,
+  SetLoadedMessage, SetLoadedPayload,
+  SetLoadingMessage,
+  SetLoadingPayload,
+  UserJoinedMessage,
+  UserJoinedPayload,
+  UserJoinMessage,
+  UserJoinSuccessMessage,
+  UserJoinSuccessPayload,
+  UserLeftMessage,
+  UserLeftPayload
+} from "../../../../common/src/messages";
 
-//TODO: move to a common src directory
-export type UserInfo = {
-  room: string;
-  name: string;
-  id: string;
-}
+type Action<T> = (data: T) => void
 
 export interface LuemmeSocket {
-  join: (room: string) => void
-  onJoined: (handler: (user: UserInfo, readers: UserInfo[]) => void) => void
-  onUserJoined: (handler: (name: string) => void) => void
-  onUserLeft: (handler: (name: string) => void) => void
-  loading: (percent: number) => void
-  loaded: (url: string) => void
-  position: (y: number) => void
-  onPosition: (handler: (y: number) => void) => void
-  zoom: (scale: number) => void
-  onZoom: (handler: (scale: number) => void) => void
-  cursor: (x: number, y: number) => void
-  onCursor: (handler: (user: string, x: number, y: number) => void) => void
+  sendJoinRequest: Action<string>
+  joinSuccess: Subject<UserJoinSuccessPayload>
+  userJoined: Subject<UserJoinedPayload>
+  userLeft: Subject<UserLeftPayload>
+  sendLoadingStatus: Action<SetLoadingPayload>
+  sendLoadedStatus: Action<SetLoadedPayload>
+  setScrollPosition: Action<ScrollPositionPayload>
+  scrollPosition: Subject<ScrollPositionPayload>
+  sendCursorPosition: Action<SetCursorPositionPayload>
+  cursorPosition: Subject<CursorPositionPayload>
+}
+
+function messageAsSubject<T>(socket: Socket, event: string): Subject<T> {
+  const subject = new Subject<T>()
+  socket.on(event, (v: T) => subject.next(v))
+  return subject
 }
 
 export function installLuemmeSocket(): LuemmeSocket {
@@ -28,20 +46,16 @@ export function installLuemmeSocket(): LuemmeSocket {
     // register wit
   })
   // server replies - with secret to be used on reconnect, to keep the name the same
-
-
   return {
-    join: (room: string) => socket.emit('user.join', room),
-    onJoined: (handler: (user: UserInfo, readers: UserInfo[]) => void) => socket.on('user.join.success', handler),
-    onUserJoined: (handler: (name: string) => void) => socket.on('user.joined', handler),
-    onUserLeft: (handler: (name: string) => void) => socket.on('user.left', handler),
-    loading: (percent: number) => socket.volatile.emit('loading', percent),
-    loaded: (url: string) => socket.emit('loaded', url),
-    position: (y: number) => socket.volatile.emit('position', y),
-    onPosition: (handler: (y: number) => void) => socket.on('position', handler),
-    zoom: (scale: number) => socket.volatile.emit('zoom', scale),
-    onZoom: (handler: (scale: number) => void) => socket.on('zoom', handler),
-    cursor: (x: number, y: number) => socket.volatile.emit('cursor', x, y),
-    onCursor: (handler: (user: string, x: number, y: number) => void) => socket.on('cursor', handler)
+    sendJoinRequest: (room: string) => socket.emit(UserJoinMessage, room),
+    joinSuccess: messageAsSubject(socket, UserJoinSuccessMessage),
+    userJoined: messageAsSubject(socket, UserJoinedMessage),
+    userLeft: messageAsSubject(socket, UserLeftMessage),
+    sendLoadingStatus: (data) => socket.volatile.emit(SetLoadingMessage, data),
+    sendLoadedStatus: (data) => socket.emit(SetLoadedMessage, data),
+    setScrollPosition: (data) => socket.volatile.emit(ScrollPositionMessage, data),
+    scrollPosition: messageAsSubject(socket, ScrollPositionMessage),
+    sendCursorPosition: (data) => socket.volatile.emit(SetCursorPositionMessage, data),
+    cursorPosition: messageAsSubject(socket, CursorPositionMessage)
   }
 }

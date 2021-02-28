@@ -14,7 +14,8 @@
   },
   "workspaces": [
     "site",
-    "server"
+    "server",
+    "common"
   ],
   "private": true,
   "license": "MIT",

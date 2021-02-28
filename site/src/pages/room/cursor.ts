@@ -1,12 +1,13 @@
 import {LuemmeSocket} from "./luemmeSocket";
 import Icon from '../../images/cursor.svg';
+import {CursorPositionPayload} from "../../../../common/src/messages";
 
-function pageToPercentage(x: number, rect: DOMRect ) {
+function pageToPercentage(x: number, rect: DOMRect) {
   return ((x - rect.x) / rect.width * 100)
 }
 
-function percentageToPage(v: number, rect: DOMRect ) {
-  return (v/100) * rect.width + rect.x
+function percentageToPage(v: number, rect: DOMRect) {
+  return (v / 100) * rect.width + rect.x
 }
 
 export function installCursorSync(container: HTMLElement, socket: LuemmeSocket) {
@@ -14,25 +15,25 @@ export function installCursorSync(container: HTMLElement, socket: LuemmeSocket) 
   const cursors = new Map<string, HTMLElement>();
   let rect: DOMRect | null = null
 
-  const updateCursor = (user: string, x: number, y: number) => {
+  const updateCursor = (data: CursorPositionPayload) => {
     const page = container.querySelector('#viewer .page');
-    if (!page ) return
+    if (!page) return
     const rect = page.getBoundingClientRect()
-    const scaledX = percentageToPage(x, rect)
-    const scaledY = (y / 100) * container.scrollHeight - container.scrollTop
-    const cursor = cursors.get(user);
+    const scaledX = percentageToPage(data.x, rect)
+    const scaledY = (data.y / 100) * container.scrollHeight - container.scrollTop
+    const cursor = cursors.get(data.id);
     if (cursor) {
-      cursor.style.top = `${scaledY-5}px`
-      cursor.style.left = `${scaledX-5}px`
+      cursor.style.top = `${scaledY - 5}px`
+      cursor.style.left = `${scaledX - 5}px`
     } else {
       const cursor = document.createElement('div')
       cursor.style.position = 'absolute'
-      cursor.style.top = `${scaledY-8}px`
-      cursor.style.left = `${scaledX-8}px`
+      cursor.style.top = `${scaledY - 8}px`
+      cursor.style.left = `${scaledX - 8}px`
       cursor.style.background = `url(${Icon})`
       cursor.style.width = '22px'
       cursor.style.height = '22px'
-      cursors.set(user, cursor);
+      cursors.set(data.id, cursor);
       document.body.append(cursor)
     }
   }
@@ -44,7 +45,7 @@ export function installCursorSync(container: HTMLElement, socket: LuemmeSocket) 
     const x = pageToPercentage(e.pageX, rect)
     const y = ((e.pageY + container.scrollTop) / container.scrollHeight) * 100
     // console.log(e.pageX,p, percentageToPage(p, rect))
-    socket.cursor(x, y)
+    socket.sendCursorPosition({x, y})
   })
-  socket.onCursor(updateCursor)
+  socket.cursorPosition.subscribe(updateCursor)
 }

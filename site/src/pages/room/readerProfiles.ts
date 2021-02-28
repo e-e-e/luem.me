@@ -1,20 +1,16 @@
 import {LuemmeSocket} from "./luemmeSocket";
 
-type UserStore = {
-  whoami?: string,
-  users: Map<string, string>
-}
-
 export function installReaderProfiles(socket: LuemmeSocket, room: string) {
-  socket.join(room);
-  socket.onJoined((user, readers) => {
-    console.log('I am', user);
-    console.log('There are', readers)
+  socket.sendJoinRequest(room);
+
+  const subscription = socket.joinSuccess.subscribe((data) => {
+    console.log('I am', data.whoami);
+    console.log('There are', data.readers)
   })
-  socket.onUserJoined((user) => {
+  socket.userJoined.subscribe((user) => {
     console.log('user joined:', user)
   })
-  socket.onUserLeft((user) => {
+  socket.userLeft.subscribe((user) => {
     console.log('user left:', user)
   })
 
