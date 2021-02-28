@@ -12,7 +12,7 @@ const DEFAULT_SCALE_DELTA = 1.1
 const MAX_SCALE = 4
 const MIN_SCALE = 0.2
 
-export function installPdfViewer(root: HTMLElement, socket: LuemmeClient) {
+export function installPdfViewer(root: HTMLElement, luemme: LuemmeClient) {
   const container = createPdfViewerContainer()
   if(!(container instanceof HTMLElement)) throw new Error('expected component to return HTML element')
 
@@ -53,18 +53,18 @@ export function installPdfViewer(root: HTMLElement, socket: LuemmeClient) {
     console.log('load', url)
     // TODO: clean up if already loaded
     isLoaded = false;
-    socket.sendLoadingStatus({ url, percent: 0 })
+    luemme.sendLoadingStatus({ url, percent: 0 })
     // send event
     const task = pdfjs.getDocument(url)
     task.onProgress = (data: any) => {
       if (!data.total) return;
-      socket.sendLoadingStatus({ url, percent: (data.loaded / data.total) * 100 });
+      luemme.sendLoadingStatus({ url, percent: (data.loaded / data.total) * 100 });
     }
     const pdfDocument = await task.promise
     isLoaded = true;
     pdfViewer.setDocument(pdfDocument);
     pdfLinkService.setDocument(pdfDocument, null);
-    socket.sendLoadedStatus({ url });
+    luemme.sendLoadedStatus({ url });
   }
 
   const zoomIn = (ticks: number) => {

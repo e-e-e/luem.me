@@ -40,7 +40,7 @@ function messageAsSubject<T>(socket: Socket, event: string): Subject<T> {
   return subject
 }
 
-export function installLuemmeSocket(): LuemmeClient {
+export function installLuemmeClient(): LuemmeClient {
   const socket = io({path: '/io', port: process.env.SOCKET_PORT})
   socket.on('connect', () => {
     // register wit

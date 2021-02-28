@@ -1,6 +1,6 @@
 import Inactive from "inactive";
 import text from "../../docs/text.pdf";
-import {installLuemmeSocket} from "./luemmeClient";
+import {installLuemmeClient} from "./luemmeClient";
 import {installReaderProfiles} from "./readerProfiles";
 import {installViewportSync} from "./viewport";
 import {installCursorSync} from "./cursor";
@@ -8,11 +8,11 @@ import {installPdfViewer} from "./pdfViewer/install";
 import {createTextSelector} from "./select";
 
 export async function installRoom(room: string) {
-  const socket = installLuemmeSocket();
-  const { load, container } = installPdfViewer(document.body, socket)
-  const users = installReaderProfiles(socket, room)
-  installViewportSync(container, socket)
-  installCursorSync(container, socket)
+  const client = installLuemmeClient();
+  const { load, container } = installPdfViewer(document.body, client)
+  const users = installReaderProfiles(client, room)
+  installViewportSync(container, client)
+  installCursorSync(container, client)
   const selector = createTextSelector((url) => {
     load('/content/' + encodeURIComponent(url))
   });

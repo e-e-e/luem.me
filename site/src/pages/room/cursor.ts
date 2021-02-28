@@ -10,7 +10,7 @@ function percentageToPage(v: number, rect: DOMRect) {
   return (v / 100) * rect.width + rect.x
 }
 
-export function installCursorSync(container: HTMLElement, socket: LuemmeClient) {
+export function installCursorSync(container: HTMLElement, luemme: LuemmeClient) {
   // state
   const cursors = new Map<string, HTMLElement>();
   let rect: DOMRect | null = null
@@ -45,7 +45,7 @@ export function installCursorSync(container: HTMLElement, socket: LuemmeClient) 
     const x = pageToPercentage(e.pageX, rect)
     const y = ((e.pageY + container.scrollTop) / container.scrollHeight) * 100
     // console.log(e.pageX,p, percentageToPage(p, rect))
-    socket.sendCursorPosition({x, y})
+    luemme.sendCursorPosition({x, y})
   })
-  socket.cursorPosition.subscribe(updateCursor)
+  luemme.cursorPosition.subscribe(updateCursor)
 }

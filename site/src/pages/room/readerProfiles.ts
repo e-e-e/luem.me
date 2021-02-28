@@ -1,16 +1,16 @@
 import {LuemmeClient} from "./luemmeClient";
 
-export function installReaderProfiles(socket: LuemmeClient, room: string) {
-  socket.sendJoinRequest(room);
+export function installReaderProfiles(luemme: LuemmeClient, room: string) {
+  luemme.sendJoinRequest(room);
 
-  const subscription = socket.joinSuccess.subscribe((data) => {
+  const subscription = luemme.joinSuccess.subscribe((data) => {
     console.log('I am', data.whoami);
     console.log('There are', data.readers)
   })
-  socket.userJoined.subscribe((user) => {
+  luemme.userJoined.subscribe((user) => {
     console.log('user joined:', user)
   })
-  socket.userLeft.subscribe((user) => {
+  luemme.userLeft.subscribe((user) => {
     console.log('user left:', user)
   })
 
