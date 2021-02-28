@@ -1,6 +1,6 @@
-import {LuemmeSocket} from "./luemmeSocket";
+import {LuemmeClient} from "./luemmeClient";
 
-export function installReaderProfiles(socket: LuemmeSocket, room: string) {
+export function installReaderProfiles(socket: LuemmeClient, room: string) {
   socket.sendJoinRequest(room);
 
   const subscription = socket.joinSuccess.subscribe((data) => {

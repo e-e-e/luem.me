@@ -1,5 +1,5 @@
 import Inactive from "inactive";
-import { LuemmeSocket } from "../luemmeSocket";
+import { LuemmeClient } from "../luemmeClient";
 import {createPdfViewControls, createPdfViewerContainer} from "./Viewer";
 
 import * as pdfjs from "pdfjs-dist"
@@ -12,7 +12,7 @@ const DEFAULT_SCALE_DELTA = 1.1
 const MAX_SCALE = 4
 const MIN_SCALE = 0.2
 
-export function installPdfViewer(root: HTMLElement, socket: LuemmeSocket) {
+export function installPdfViewer(root: HTMLElement, socket: LuemmeClient) {
   const container = createPdfViewerContainer()
   if(!(container instanceof HTMLElement)) throw new Error('expected component to return HTML element')
 

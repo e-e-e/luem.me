@@ -1,6 +1,6 @@
 import Inactive from "inactive";
 import text from "../../docs/text.pdf";
-import {installLuemmeSocket} from "./luemmeSocket";
+import {installLuemmeSocket} from "./luemmeClient";
 import {installReaderProfiles} from "./readerProfiles";
 import {installViewportSync} from "./viewport";
 import {installCursorSync} from "./cursor";

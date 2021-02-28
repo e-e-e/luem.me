@@ -1,4 +1,4 @@
-import {LuemmeSocket} from "./luemmeSocket";
+import {LuemmeClient} from "./luemmeClient";
 import Icon from '../../images/cursor.svg';
 import {CursorPositionPayload} from "../../../../common/src/messages";
 
@@ -10,7 +10,7 @@ function percentageToPage(v: number, rect: DOMRect) {
   return (v / 100) * rect.width + rect.x
 }
 
-export function installCursorSync(container: HTMLElement, socket: LuemmeSocket) {
+export function installCursorSync(container: HTMLElement, socket: LuemmeClient) {
   // state
   const cursors = new Map<string, HTMLElement>();
   let rect: DOMRect | null = null

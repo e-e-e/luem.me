@@ -21,7 +21,7 @@ import {
 
 type Action<T> = (data: T) => void
 
-export interface LuemmeSocket {
+export interface LuemmeClient {
   sendJoinRequest: Action<string>
   joinSuccess: Subject<UserJoinSuccessPayload>
   userJoined: Subject<UserJoinedPayload>
@@ -40,7 +40,7 @@ function messageAsSubject<T>(socket: Socket, event: string): Subject<T> {
   return subject
 }
 
-export function installLuemmeSocket(): LuemmeSocket {
+export function installLuemmeSocket(): LuemmeClient {
   const socket = io({path: '/io', port: process.env.SOCKET_PORT})
   socket.on('connect', () => {
     // register wit

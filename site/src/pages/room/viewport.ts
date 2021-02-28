@@ -1,6 +1,6 @@
-import { LuemmeSocket } from "./luemmeSocket";
+import { LuemmeClient } from "./luemmeClient";
 
-export function installViewportSync(container: HTMLElement, socket: LuemmeSocket) {
+export function installViewportSync(container: HTMLElement, socket: LuemmeClient) {
   let scrollLock = false
   container.addEventListener('scroll', (e) => {
     if (scrollLock) return;
