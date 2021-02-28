@@ -11,7 +11,7 @@ export function createTextSelector(load: (url: string) => void) {
   return (
     <div style={{ position: 'absolute', zIndex: 999999}}>
       <form onSubmit={onSubmit}>
-        <label>Link <input required type="url" ref={ref}/></label>
+        <label>Link <input required type="url" ref={ref} value="https://arena-attachments.s3.amazonaws.com/8434432/a9441e82740552c905c92fcdb2fca3ee.pdf"/></label>
         <button type="submit">Load</button>
       </form>
     </div>

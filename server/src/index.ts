@@ -9,11 +9,21 @@ import cors from 'cors'
 import fetch from 'node-fetch'
 import {randomAnimal} from "./animals";
 import {
-  CursorPositionMessage, ReadingRoomState, ReadingRoomStateMessage,
+  CursorPositionMessage,
+  LoadedMessage,
+  LoadingMessage,
+  ReadingRoomState,
+  ReadingRoomStateMessage, ReadingRoomTextMessage,
   ScrollPositionMessage,
   ScrollPositionPayload,
   SetCursorPositionMessage,
-  SetCursorPositionPayload, UserInfo,
+  SetCursorPositionPayload,
+  SetLoadedMessage,
+  SetLoadedPayload,
+  SetLoadingMessage,
+  SetLoadingPayload,
+  SetReadingRoomTextMessage,
+  UserInfo,
   UserJoinedMessage,
   UserJoinMessage,
   UserJoinSuccessMessage,
@@ -109,6 +119,13 @@ setInterval(() => {
   toRemove.forEach(id => readingRooms.delete(id));
 }, 5000)
 
+function setReadingRoomData(room: string, transform: (prev: ReadingRoomState) => ReadingRoomState) {
+  const readingRoom = readingRooms.get(room)
+  if (!readingRoom) return
+  console.log('new state:', transform(readingRoom))
+  readingRooms.set(room, transform(readingRoom))
+}
+
 io.on("connection", socket => {
   socket.on(UserJoinMessage, (room: string) => {
     leaveAllRooms(socket)
@@ -118,6 +135,7 @@ io.on("connection", socket => {
     const session = createNewSession(socket, room)
     const readers = getReadersInRoom(io, room)
     socket.join(room)
+    console.log('join', socket.id)
     socket.emit(UserJoinSuccessMessage, {
       whoami: session,
       readers,
@@ -134,14 +152,35 @@ io.on("connection", socket => {
     leaveAllRooms(socket)
   })
 
+  socket.on(SetReadingRoomTextMessage, (data: string) => {
+    const user = sessions.get(socket)
+    if (!user) return
+    setReadingRoomData(user.room, prev => ({...prev, url: data }))
+    if (user) socket.to(user.room).emit(ReadingRoomTextMessage, { url: data, reader: user.id });
+  })
+
   socket.on(ScrollPositionMessage, (data: ScrollPositionPayload) => {
     const user = sessions.get(socket)
-    if (user) socket.to(user.room).emit(ScrollPositionMessage, data);
+    if (!user) return
+    console.log('set room scroll', data)
+    setReadingRoomData(user.room, prev => ({...prev, scrollPosition: data }))
+    socket.to(user.room).emit(ScrollPositionMessage, data);
   })
 
   socket.on(SetCursorPositionMessage, (data: SetCursorPositionPayload) => {
     const user = sessions.get(socket)
     if (user) socket.to(user.room).emit(CursorPositionMessage, {...data, id: user.id });
+  })
+
+  socket.on(SetLoadingMessage, (data: SetLoadingPayload) => {
+    // maybe set room
+    const user = sessions.get(socket)
+    if (user) socket.to(user.room).emit(LoadingMessage, {...data, reader: user.id });
+  })
+
+  socket.on(SetLoadedMessage, (data: SetLoadedPayload) => {
+    const user = sessions.get(socket)
+    if (user) socket.to(user.room).emit(LoadedMessage, {...data, reader: user.id });
   })
 });
 

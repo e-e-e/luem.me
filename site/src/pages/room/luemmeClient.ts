@@ -3,13 +3,19 @@ import {Subject} from "rxjs";
 import {
   CursorPositionMessage,
   CursorPositionPayload,
+  ReadingRoomStateMessage,
+  ReadingRoomStatePayload,
+  ReadingRoomTextMessage,
+  ReadingRoomTextPayload,
   ScrollPositionMessage,
   ScrollPositionPayload,
   SetCursorPositionMessage,
   SetCursorPositionPayload,
-  SetLoadedMessage, SetLoadedPayload,
+  SetLoadedMessage,
+  SetLoadedPayload,
   SetLoadingMessage,
   SetLoadingPayload,
+  SetReadingRoomTextMessage,
   UserJoinedMessage,
   UserJoinedPayload,
   UserJoinMessage,
@@ -24,6 +30,9 @@ type Action<T> = (data: T) => void
 export interface LuemmeClient {
   sendJoinRequest: Action<string>
   joinSuccess: Subject<UserJoinSuccessPayload>
+  readingRoomInitialState: Subject<ReadingRoomStatePayload>
+  sendReadingRoomText: Action<string>
+  readingRoomText: Subject<ReadingRoomTextPayload>
   userJoined: Subject<UserJoinedPayload>
   userLeft: Subject<UserLeftPayload>
   sendLoadingStatus: Action<SetLoadingPayload>
@@ -49,6 +58,9 @@ export function installLuemmeClient(): LuemmeClient {
   return {
     sendJoinRequest: (room: string) => socket.emit(UserJoinMessage, room),
     joinSuccess: messageAsSubject(socket, UserJoinSuccessMessage),
+    readingRoomInitialState: messageAsSubject(socket, ReadingRoomStateMessage),
+    readingRoomText: messageAsSubject(socket, ReadingRoomTextMessage),
+    sendReadingRoomText: (data) => socket.emit(SetReadingRoomTextMessage, data),
     userJoined: messageAsSubject(socket, UserJoinedMessage),
     userLeft: messageAsSubject(socket, UserLeftMessage),
     sendLoadingStatus: (data) => socket.volatile.emit(SetLoadingMessage, data),

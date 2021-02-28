@@ -9,12 +9,12 @@ import {createTextSelector} from "./select";
 
 export async function installRoom(room: string) {
   const client = installLuemmeClient();
-  const { load, container } = installPdfViewer(document.body, client)
+  const pdfViewer = installPdfViewer(document.body, client)
   const users = installReaderProfiles(client, room)
-  installViewportSync(container, client)
-  installCursorSync(container, client)
+  installViewportSync(pdfViewer, client)
+  installCursorSync(pdfViewer.container, client)
   const selector = createTextSelector((url) => {
-    load('/content/' + encodeURIComponent(url))
+    pdfViewer.load('/content/' + encodeURIComponent(url))
   });
   Inactive.mount(document.body, selector)
   const url = 'https://arena-attachments.s3.amazonaws.com/8434432/a9441e82740552c905c92fcdb2fca3ee.pdf'

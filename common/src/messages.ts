@@ -1,4 +1,4 @@
-type Position = {
+export type Position = {
   x: number;
   y: number;
 }
@@ -25,6 +25,12 @@ export type UserJoinSuccessPayload = {
 
 export const ReadingRoomStateMessage = 'room.state';
 export type ReadingRoomStatePayload = ReadingRoomState
+
+export const SetReadingRoomTextMessage = 'room.text.set';
+export type SetReadingRoomTextPayload = string
+
+export const ReadingRoomTextMessage = 'room.text';
+export type ReadingRoomTextPayload = { url: string, reader: UserInfo['id']}
 
 export const UserJoinedMessage = 'user.joined'
 export type UserJoinedPayload = UserInfo
