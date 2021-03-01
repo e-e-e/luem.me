@@ -24,12 +24,23 @@ export function installHomePage() {
         <h1>Luemme: We read</h1>
         <form onSubmit={(e) => e.preventDefault()}>
           <p>
+            Create or join a reading room to get started.
+          </p>
+          <div>
             <label htmlFor="room-name">Room name:</label>
-            <input name="room-name" onInput={onInput} placeholder="enter room name" ref={ref} pattern="\w+" required autocomplete="off" />
-          </p>
-          <p className="align-right">
-          <button onClick={submit}>Enter</button>
-          </p>
+            <input
+              name="room-name"
+              onInput={onInput}
+              placeholder="enter room name"
+              ref={ref}
+              pattern="\w+"
+              required
+              autocomplete="off"
+            />
+          </div>
+          <div className="align-right">
+            <button onClick={submit}>Enter</button>
+          </div>
         </form>
       </div>
     </main>

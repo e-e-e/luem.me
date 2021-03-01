@@ -110,14 +110,15 @@ export function installPdfViewer(root: HTMLElement, luemme: LuemmeClient): PdfVi
   }
 
   const controls = createPdfViewControls({zoomOut: () => zoomOut(1), zoomIn: () => zoomIn(1)})
-  if (controls instanceof HTMLElement) container.appendChild(controls)
+
 
   documentState.pipe(distinctUntilChanged(),
   ).subscribe((v) => {
     if (v === 'loading') {
-      container.style.background = "rgba(128,128,128, 1)"
-    } else if (v === 'loaded') {
       container.style.background = "rgba(128,128,128, 0)"
+    } else if (v === 'loaded') {
+      container.style.background = "rgba(128,128,128, 1)"
+      if (controls instanceof HTMLElement) container.appendChild(controls)
     }
     console.log('loaded do something', v)
   })
