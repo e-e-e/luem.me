@@ -1,0 +1,26 @@
+@font-face {
+    font-family: 'SpaceGrotesk';
+    src: url('SpaceGrotesk-Regular.woff2') format('woff2'), /* Super Modern Browsers */
+         url('SpaceGrotesk-Regular.ttf') format('truetype'); /* Safari, Android, iOS */
+}
+
+@font-face {
+    font-family: 'SpaceGrotesk';
+    src: url('SpaceGrotesk-Medium.woff2') format('woff2'), /* Super Modern Browsers */
+    url('SpaceGrotesk-Medium.ttf') format('truetype'); /* Safari, Android, iOS */
+    font-weight: 700;
+}
+
+@font-face {
+    font-family: 'SpaceGrotesk';
+    src: url('SpaceGrotesk-Bold.woff2') format('woff2'), /* Super Modern Browsers */
+    url('SpaceGrotesk-Bold.ttf') format('truetype'); /* Safari, Android, iOS */
+    font-weight: 900;
+}
+
+@font-face {
+    font-family: 'SpaceGrotesk';
+    src: url('SpaceGrotesk-Light.woff2') format('woff2'), /* Super Modern Browsers */
+    url('SpaceGrotesk-Light.ttf') format('truetype'); /* Safari, Android, iOS */
+    font-weight: 300;
+}
