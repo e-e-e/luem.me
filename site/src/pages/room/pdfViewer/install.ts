@@ -7,9 +7,8 @@ import * as pdfjsViewer from 'pdfjs-dist/web/pdf_viewer';
 
 import 'pdfjs-dist/build/pdf.worker.entry';
 import 'pdfjs-dist/web/pdf_viewer.css';
-import { distinctUntilChanged, filter, first} from "rxjs/operators";
+import { distinctUntilChanged, first} from "rxjs/operators";
 import {BehaviorSubject } from "rxjs";
-
 const DEFAULT_SCALE_DELTA = 1.1
 const MAX_SCALE = 4
 const MIN_SCALE = 0.2

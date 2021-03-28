@@ -54,7 +54,7 @@ export const ScrollPositionMessage = 'scroll.position'
 export type ScrollPositionPayload = Position
 
 export const CursorPositionMessage = 'cursor.position'
-export type CursorPositionPayload = Position & Pick<UserInfo, 'id'>
+export type CursorPositionPayload = Position & Pick<UserInfo, 'id'> & { pressed: boolean }
 
 export const SetCursorPositionMessage = 'cursor.position.set'
-export type SetCursorPositionPayload = Position
+export type SetCursorPositionPayload = Position  & { pressed: boolean }

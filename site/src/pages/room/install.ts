@@ -1,7 +1,7 @@
 import {installLuemmeClient} from "./luemmeClient";
 import {installReaderProfiles} from "./readerProfiles";
 import {installViewportSync} from "./viewport";
-import {installCursorSync} from "./cursor";
+import {installCursorSync} from "./cursor/install";
 import {installPdfViewer} from "./pdfViewer/install";
 import {installControls} from "./controls";
 
