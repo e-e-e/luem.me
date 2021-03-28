@@ -20,6 +20,11 @@ body {
     transition: background-color ease-out 7s;
 }
 
+/* remove cursor from PDF viewer */
+#viewer * {
+    cursor: none !important;
+}
+
 #scale-controls {
     position: fixed;
     right: 0;

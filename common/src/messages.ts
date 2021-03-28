@@ -3,9 +3,16 @@ export type Position = {
   y: number;
 }
 
+export type Color = {
+  h: number,
+  s: number,
+  l: number,
+}
+
 export type UserInfo = {
   room: string;
   name: string;
+  color: Color;
   id: string;
 }
 

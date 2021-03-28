@@ -1,6 +1,7 @@
 import {LuemmeClient} from "../luemmeClient";
 import {CursorPositionPayload, Position, SetCursorPositionPayload} from "../../../../../common/src/messages";
 import './cursor'
+import {Profiles} from "../profiles/install";
 
 function pageToPercentage(x: number, rect: DOMRect) {
   return ((x - rect.x) / rect.width * 100)
@@ -10,7 +11,7 @@ function percentageToPage(v: number, rect: DOMRect) {
   return (v / 100) * rect.width + rect.x
 }
 
-export function installCursorSync(container: HTMLElement, luemme: LuemmeClient) {
+export function installCursorSync(container: HTMLElement, luemme: LuemmeClient, profiles: Profiles) {
   const cursors = new Map<string, Cursor>();
   let rect: DOMRect | null = null
   const ownCursorState: SetCursorPositionPayload = { x: 0, y: 0, pressed: false}
@@ -22,15 +23,19 @@ export function installCursorSync(container: HTMLElement, luemme: LuemmeClient) 
     const scaledX = percentageToPage(data.x, rect)
     const scaledY = (data.y / 100) * container.scrollHeight - container.scrollTop
     const cursor = cursors.get(data.id);
+    const user = data.id === 'me' ? profiles.whoami.getValue() : profiles.readers.get(data.id)
     if (cursor) {
-      cursor.style.top = `${scaledY}px`
-      cursor.style.left = `${scaledX}px`
+      cursor.elementStyle.top = `${scaledY}px`
+      cursor.elementStyle.left = `${scaledX}px`
       cursor.pressed = data.pressed
     } else {
       const cursor = document.createElement('lue-cursor') as Cursor
-      cursor.style.top = `${scaledY}px`
-      cursor.style.left = `${scaledX}px`
+      cursor.elementStyle.top = `${scaledY}px`
+      cursor.elementStyle.left = `${scaledX}px`
       cursor.pressed = data.pressed
+      if (user) {
+        cursor.color = `hsl(${user.color.h},${user.color.s}%,${user.color.l}%)`
+      }
       cursors.set(data.id, cursor);
       document.body.append(cursor)
     }

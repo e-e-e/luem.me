@@ -1,3 +1,5 @@
+import {getNextUserColor} from "./colors";
+
 require("dotenv").config()
 
 import Express from 'express';
@@ -79,10 +81,11 @@ function createReadingRoom(room: string) {
   readingRooms.set(room, { name: room, scrollPosition: { x: 0, y: 0 }, url: null })
 }
 
-function createNewSession(socket: Socket, room: string) {
+function createNewSession(socket: Socket, room: string, readers: UserInfo[]): UserInfo {
   const user = {
     name: randomAnimal(),
     room,
+    color: getNextUserColor(readers),
     id: socket.id,
   }
   sessions.set(socket, user);
@@ -132,8 +135,8 @@ io.on("connection", socket => {
     socket.leaveAll()
     const readingRoom = readingRooms.get(room)
 
-    const session = createNewSession(socket, room)
     const readers = getReadersInRoom(io, room)
+    const session = createNewSession(socket, room, readers)
     socket.join(room)
     console.log('join', socket.id)
     socket.emit(UserJoinSuccessMessage, {
