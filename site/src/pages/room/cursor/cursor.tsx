@@ -1,9 +1,9 @@
 class Cursor extends HTMLElement {
-  private element: HTMLElement
+  private element: HTMLElement;
 
   constructor() {
     super();
-    const template = document.createElement('template')
+    const template = document.createElement('template');
     template.innerHTML = `
       <style>
         :host {
@@ -27,8 +27,8 @@ class Cursor extends HTMLElement {
         }
       </style>
       <div id="cursor"/>
-    `
-    const shadow = this.attachShadow({mode: 'open'})
+    `;
+    const shadow = this.attachShadow({ mode: 'open' });
     shadow.appendChild(template.content.cloneNode(true));
     this.element = shadow.getElementById('cursor')!;
   }
@@ -37,37 +37,49 @@ class Cursor extends HTMLElement {
     return ['pressed', 'color'];
   }
 
-  attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null) {
+  attributeChangedCallback(
+    name: string,
+    oldValue: string | null,
+    newValue: string | null
+  ) {
     switch (name) {
       case 'color': {
         if (newValue) {
-          console.log('newValue', newValue)
-          const match = newValue.match(/hsl\((.*)\)/)
+          console.log('newValue', newValue);
+          const match = newValue.match(/hsl\((.*)\)/);
           if (!match) {
             // todo handle other color types
             return;
           }
-          this.style.setProperty('--gradient-start-color', `hsla(${match[1]}, 1)`)
-          this.style.setProperty('--gradient-end-color', `hsla(${match[1]}, 0)`)
+          this.style.setProperty(
+            '--gradient-start-color',
+            `hsla(${match[1]}, 1)`
+          );
+          this.style.setProperty(
+            '--gradient-end-color',
+            `hsla(${match[1]}, 0)`
+          );
         } else {
-          this.style.removeProperty('--gradient-start-color')
-          this.style.removeProperty('--gradient-end-color',)
+          this.style.removeProperty('--gradient-start-color');
+          this.style.removeProperty('--gradient-end-color');
         }
-        return
+        return;
       }
       case 'pressed': {
-        newValue === null ? this.element.classList.remove('pressed') : this.element.classList.add('pressed')
-        return
+        newValue === null
+          ? this.element.classList.remove('pressed')
+          : this.element.classList.add('pressed');
+        return;
       }
     }
   }
 
   get elementStyle() {
-    return this.element.style
+    return this.element.style;
   }
 
   get color(): string | null {
-    return this.getAttribute('color')
+    return this.getAttribute('color');
   }
 
   set color(value: string | null) {
@@ -79,7 +91,7 @@ class Cursor extends HTMLElement {
   }
 
   get pressed(): boolean {
-    return this.getAttribute('pressed') != null
+    return this.getAttribute('pressed') != null;
   }
 
   set pressed(value: boolean) {
@@ -91,5 +103,4 @@ class Cursor extends HTMLElement {
   }
 }
 
-
-customElements.define('lue-cursor', Cursor)
+customElements.define('lue-cursor', Cursor);

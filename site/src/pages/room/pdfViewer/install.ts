@@ -1,29 +1,36 @@
-import Inactive from "inactive";
-import {LuemmeClient} from "../luemmeClient";
-import {createPdfViewControls, createPdfViewerContainer} from "./Viewer";
+import Inactive from 'inactive';
+import { LuemmeClient } from '../luemmeClient';
+import { createPdfViewControls, createPdfViewerContainer } from './Viewer';
 
-import * as pdfjs from "pdfjs-dist"
+import * as pdfjs from 'pdfjs-dist';
 import * as pdfjsViewer from 'pdfjs-dist/web/pdf_viewer';
 
 import 'pdfjs-dist/build/pdf.worker.entry';
 import 'pdfjs-dist/web/pdf_viewer.css';
-import { distinctUntilChanged, first} from "rxjs/operators";
-import {BehaviorSubject } from "rxjs";
-const DEFAULT_SCALE_DELTA = 1.1
-const MAX_SCALE = 4
-const MIN_SCALE = 0.2
+import { distinctUntilChanged, first } from 'rxjs/operators';
+import { BehaviorSubject } from 'rxjs';
 
-export type State = 'initial' | 'loading' | 'loaded'
+import text from '../../../docs/text.pdf';
+
+const DEFAULT_SCALE_DELTA = 1.1;
+const MAX_SCALE = 4;
+const MIN_SCALE = 0.2;
+
+export type State = 'initial' | 'loading' | 'loaded';
 
 export type PdfViewer = {
-  container: HTMLElement
-  load(url: string): Promise<void>
-  state: BehaviorSubject<State>
-}
+  container: HTMLElement;
+  load(url: string): Promise<void>;
+  state: BehaviorSubject<State>;
+};
 
-export function installPdfViewer(root: HTMLElement, luemme: LuemmeClient): PdfViewer {
-  const container = createPdfViewerContainer()
-  if (!(container instanceof HTMLElement)) throw new Error('expected component to return HTML element')
+export function installPdfViewer(
+  root: HTMLElement,
+  luemme: LuemmeClient
+): PdfViewer {
+  const container = createPdfViewerContainer();
+  if (!(container instanceof HTMLElement))
+    throw new Error('expected component to return HTML element');
 
   const eventBus = new pdfjsViewer.EventBus();
 
@@ -45,11 +52,11 @@ export function installPdfViewer(root: HTMLElement, luemme: LuemmeClient): PdfVi
 
   pdfLinkService.setViewer(pdfViewer);
 
-  eventBus.on("pagesinit", function () {
+  eventBus.on('pagesinit', function () {
     // We can use pdfViewer now, e.g. let's change default scale.
     // pdfViewer.currentScaleValue = "page-width";
     //   pdfFindController.executeCommand("find", { query: 'and' });
-    const viewer = document.getElementById('viewer')
+    const viewer = document.getElementById('viewer');
     if (viewer instanceof HTMLElement) {
       const extraScroll = window.innerHeight - 100;
       viewer.style.paddingBottom = `${extraScroll < 0 ? 0 : extraScroll}px`;
@@ -60,33 +67,37 @@ export function installPdfViewer(root: HTMLElement, luemme: LuemmeClient): PdfVi
   let isLoaded = false;
 
   async function load(url: string) {
-    console.log('load', url)
+    url = text;
+    console.log('load', url);
     // TODO: clean up if already loaded
     isLoaded = false;
-    documentState.next('loading')
+    documentState.next('loading');
     // luemme.sendReadingRoomText(url);
-    luemme.sendLoadingStatus({url, percent: 0})
+    luemme.sendLoadingStatus({ url, percent: 0 });
     // send event
-    const task = pdfjs.getDocument(url)
+    const task = pdfjs.getDocument(url);
     task.onProgress = (data: any) => {
       if (!data.total) return;
-      luemme.sendLoadingStatus({url, percent: (data.loaded / data.total) * 100});
-    }
-    const pdfDocument = await task.promise
+      luemme.sendLoadingStatus({
+        url,
+        percent: (data.loaded / data.total) * 100,
+      });
+    };
+    const pdfDocument = await task.promise;
     isLoaded = true;
-    documentState.next('loaded')
+    documentState.next('loaded');
     pdfViewer.setDocument(pdfDocument);
     pdfLinkService.setDocument(pdfDocument, null);
-    luemme.sendLoadedStatus({url});
+    luemme.sendLoadedStatus({ url });
   }
 
-  luemme.readingRoomText.subscribe(data => load(data.url));
+  luemme.readingRoomText.subscribe((data) => load(data.url));
   luemme.readingRoomInitialState.pipe(first()).subscribe((roomState) => {
-    console.log('initial state', roomState)
+    console.log('initial state', roomState);
     if (roomState.url) {
-      load(roomState.url)
+      load(roomState.url);
     }
-  })
+  });
 
   const zoomIn = (ticks: number) => {
     let newScale = pdfViewer.currentScale;
@@ -96,7 +107,7 @@ export function installPdfViewer(root: HTMLElement, luemme: LuemmeClient): PdfVi
       newScale = Math.min(MAX_SCALE, newScale);
     } while (--ticks > 0 && newScale < MAX_SCALE);
     pdfViewer.currentScaleValue = newScale;
-  }
+  };
 
   const zoomOut = (ticks: number) => {
     let newScale = pdfViewer.currentScale;
@@ -106,29 +117,30 @@ export function installPdfViewer(root: HTMLElement, luemme: LuemmeClient): PdfVi
       newScale = Math.max(MIN_SCALE, newScale);
     } while (--ticks > 0 && newScale > MIN_SCALE);
     pdfViewer.currentScaleValue = newScale;
-  }
+  };
 
-  const controls = createPdfViewControls({zoomOut: () => zoomOut(1), zoomIn: () => zoomIn(1)})
+  const controls = createPdfViewControls({
+    zoomOut: () => zoomOut(1),
+    zoomIn: () => zoomIn(1),
+  });
 
-
-  documentState.pipe(distinctUntilChanged(),
-  ).subscribe((v) => {
+  documentState.pipe(distinctUntilChanged()).subscribe((v) => {
     if (v === 'loading') {
-      container.style.background = "rgba(128,128,128, 0)"
+      container.style.background = 'rgba(128,128,128, 0)';
     } else if (v === 'loaded') {
-      container.style.background = "rgba(128,128,128, 1)"
-      if (controls instanceof HTMLElement) container.appendChild(controls)
+      container.style.background = 'rgba(128,128,128, 1)';
+      if (controls instanceof HTMLElement) container.appendChild(controls);
     }
-    console.log('loaded do something', v)
-  })
+    console.log('loaded do something', v);
+  });
 
-  Inactive.mount(root, container)
+  Inactive.mount(root, container);
   return {
     load: (url: string) => {
-      luemme.sendReadingRoomText(url)
-      return load(url)
+      luemme.sendReadingRoomText(url);
+      return load(url);
     },
     state: documentState,
-    container
-  }
+    container,
+  };
 }

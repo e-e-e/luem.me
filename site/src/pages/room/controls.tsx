@@ -1,20 +1,18 @@
-import Inactive from "inactive";
-import {PdfViewer} from "./pdfViewer/install";
-import {filter, first} from "rxjs/operators";
+import Inactive from 'inactive';
+import { PdfViewer } from './pdfViewer/install';
+import { filter, first } from 'rxjs/operators';
 
 export function createTextSelector(load: (url: string) => void) {
-  const ref = Inactive.createRef<HTMLInputElement>()
+  const ref = Inactive.createRef<HTMLInputElement>();
   const onSubmit = (e: Event) => {
-    e.preventDefault()
-    if (!ref.current) return
-    load(ref.current.value)
-  }
+    e.preventDefault();
+    if (!ref.current) return;
+    load(ref.current.value);
+  };
   return (
     <div id="reader-controls">
       <form onSubmit={onSubmit}>
-        <p>
-          Enter a URL to a pdf on the web that you wish to read.
-        </p>
+        <p>Enter a URL to a pdf on the web that you wish to read.</p>
         <p>
           <input
             required
@@ -22,6 +20,9 @@ export function createTextSelector(load: (url: string) => void) {
             type="url"
             placeholder="Choose a pdf online to load."
             autocomplete="off"
+            value={
+              'https://arena-attachments.s3.amazonaws.com/8434432/a9441e82740552c905c92fcdb2fca3ee.pdf'
+            }
             ref={ref}
           />
         </p>
@@ -30,21 +31,22 @@ export function createTextSelector(load: (url: string) => void) {
         </p>
       </form>
     </div>
-  )
+  );
 }
 
 export function installControls(pdfViewer: PdfViewer) {
-  const load = (url: string) => pdfViewer.load('/content/' + encodeURIComponent(url))
-  const textSelector = createTextSelector(load)
+  const load = (url: string) =>
+    pdfViewer.load('/content/' + encodeURIComponent(url));
+  const textSelector = createTextSelector(load);
 
   Inactive.mount(document.body, textSelector);
   const unmount = () => {
     textSelector && document.body.removeChild(textSelector);
-  }
+  };
   pdfViewer.state
     .pipe(
-      filter(v => v === 'loaded' || v === 'loading'),
+      filter((v) => v === 'loaded' || v === 'loading'),
       first()
     )
-    .subscribe(unmount)
+    .subscribe(unmount);
 }

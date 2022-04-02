@@ -1,16 +1,14 @@
 {
+  "extends": "../tsconfig.base.json",
   "compilerOptions": {
+    "composite": true,
     "outDir": "./dist",
-    "root": "..",
-    "sourceMap": true,
-    "strict": true,
-    "target": "es5",
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "esModuleInterop": true,
+    "rootDir": "./src",
     "lib": [
       "es2015"
     ]
   },
-  "include": ["*.ts"]
+  "include": [
+    "src/*.ts"
+  ]
 }

@@ -1,0 +1,19 @@
+{
+  "exclude": [
+    "**/dist/**",
+    "**/__tests__/**",
+    "**/node_modules/**",
+    "**/jest.config.ts",
+  ],
+  "references": [
+    {
+      "path": "./server"
+    },
+    {
+      "path": "./common"
+    },
+    {
+      "path": "./site"
+    }
+  ]
+}

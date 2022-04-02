@@ -1,7 +1,11 @@
 node_modules/
+.yarn/
+server/dist/
+site/dist/
+common/dist/
 *.log
-server/dist
-site/dist
 .idea/
 .cache/
+.parcel-cache/
+*.tsbuildinfo
 .env

@@ -1,23 +1,25 @@
-import {getNextUserColor} from "./colors";
+import { getNextUserColor } from './colors';
 
-require("dotenv").config()
+require('dotenv').config();
 
 import Express from 'express';
 
 import http from 'http';
-import {Server, Socket} from "socket.io";
-import * as socketIO from 'socket.io'
-import cors from 'cors'
-import fetch from 'node-fetch'
-import {randomAnimal} from "./animals";
+import { Server, Socket } from 'socket.io';
+import * as socketIO from 'socket.io';
+import cors from 'cors';
+import fetch from 'node-fetch';
+import { randomAnimal } from './animals';
 import {
   CursorPositionMessage,
   LoadedMessage,
   LoadingMessage,
   ReadingRoomState,
-  ReadingRoomStateMessage, ReadingRoomTextMessage,
+  ReadingRoomStateMessage,
+  ReadingRoomTextMessage,
   ScrollPositionMessage,
   ScrollPositionPayload,
+  SelectionMessage,
   SetCursorPositionMessage,
   SetCursorPositionPayload,
   SetLoadedMessage,
@@ -25,81 +27,92 @@ import {
   SetLoadingMessage,
   SetLoadingPayload,
   SetReadingRoomTextMessage,
+  SetSelectionMessage,
+  SetSelectionPayload,
   UserInfo,
   UserJoinedMessage,
   UserJoinMessage,
   UserJoinSuccessMessage,
-  UserLeftMessage
-} from "../../common/src/messages"
+  UserLeftMessage,
+} from 'luem.me.common';
 
-const port = process.env.PORT || 3000
+const port = process.env.PORT || 3000;
 
 const app = Express();
 const httpServer = http.createServer(app);
 
 const corsOptions = {
-  "origin": "*",
-  "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
-  "preflightContinue": false,
-  "optionsSuccessStatus": 204
-}
+  origin: '*',
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  preflightContinue: false,
+  optionsSuccessStatus: 204,
+};
 
-app.use(cors(corsOptions))
+app.use(cors(corsOptions));
 
-app.use("/", Express.static("../site/dist"))
-app.use("/:room", Express.static("../site/dist", {extensions: ['html']}))
+app.use('/', Express.static('../site/dist'));
+app.use('/:room', Express.static('../site/dist', { extensions: ['html'] }));
 
 const acceptedHeaders = [
   'content-type',
   // 'content-encoding',
-  'content-length'
-]
+  'content-length',
+];
 
 app.get('/content/:url', (req, res) => {
   fetch(req.params.url).then((r) => {
     // TODO: filter by filetype
     for (const [key, value] of r.headers.entries()) {
       if (acceptedHeaders.includes(key)) {
-        res.setHeader(key, value)
+        res.setHeader(key, value);
       }
     }
-    r.body.pipe(res)
-  })
-})
-
+    r.body.pipe(res);
+  });
+});
 
 const io = new socketIO.Server(httpServer, {
   path: '/io',
-  cors: corsOptions
+  cors: corsOptions,
 });
 
-const sessions = new WeakMap<Socket, UserInfo>()
-const readingRooms = new Map<string, ReadingRoomState>()
+const sessions = new WeakMap<Socket, UserInfo>();
+const readingRooms = new Map<string, ReadingRoomState>();
 
 function createReadingRoom(room: string) {
   if (readingRooms.get(room)) return;
-  readingRooms.set(room, { name: room, scrollPosition: { x: 0, y: 0 }, url: null })
+  readingRooms.set(room, {
+    name: room,
+    scrollPosition: { x: 0, y: 0 },
+    url: null,
+  });
 }
 
-function createNewSession(socket: Socket, room: string, readers: UserInfo[]): UserInfo {
+function createNewSession(
+  socket: Socket,
+  room: string,
+  readers: UserInfo[]
+): UserInfo {
   const user = {
     name: randomAnimal(),
     room,
     color: getNextUserColor(readers),
     id: socket.id,
-  }
+  };
   sessions.set(socket, user);
   return user;
 }
 
 function getReadersInRoom(io: Server, room: string): UserInfo[] {
   const readers = io.sockets.adapter.rooms.get(room);
-  if (!readers) return []
-  return Array.from(readers).map(id => {
-    const socket = io.sockets.sockets.get(id)
-    if (!socket) return
-    return sessions.get(socket)
-  }).filter((a): a is UserInfo => a != null)
+  if (!readers) return [];
+  return Array.from(readers)
+    .map((id) => {
+      const socket = io.sockets.sockets.get(id);
+      if (!socket) return;
+      return sessions.get(socket);
+    })
+    .filter((a): a is UserInfo => a != null);
 }
 
 function leaveAllRooms(socket: Socket) {
@@ -112,81 +125,101 @@ function leaveAllRooms(socket: Socket) {
 
 // Auto clean up of room states
 setInterval(() => {
-  const toRemove = []
-  for (let room of readingRooms.values()) {
+  const toRemove = [];
+  for (const room of readingRooms.values()) {
     const readers = io.sockets.adapter.rooms.get(room.name);
     if (!readers || readers.size === 0) {
-      toRemove.push(room.name)
+      toRemove.push(room.name);
     }
   }
-  toRemove.forEach(id => readingRooms.delete(id));
-}, 5000)
+  toRemove.forEach((id) => readingRooms.delete(id));
+}, 5000);
 
-function setReadingRoomData(room: string, transform: (prev: ReadingRoomState) => ReadingRoomState) {
-  const readingRoom = readingRooms.get(room)
-  if (!readingRoom) return
-  console.log('new state:', transform(readingRoom))
-  readingRooms.set(room, transform(readingRoom))
+function setReadingRoomData(
+  room: string,
+  transform: (prev: ReadingRoomState) => ReadingRoomState
+) {
+  const readingRoom = readingRooms.get(room);
+  if (!readingRoom) return;
+  console.log('new state:', transform(readingRoom));
+  readingRooms.set(room, transform(readingRoom));
 }
 
-io.on("connection", socket => {
+io.on('connection', (socket) => {
   socket.on(UserJoinMessage, (room: string) => {
-    leaveAllRooms(socket)
-    socket.leaveAll()
-    const readingRoom = readingRooms.get(room)
+    leaveAllRooms(socket);
+    socket.leaveAll();
+    const readingRoom = readingRooms.get(room);
 
-    const readers = getReadersInRoom(io, room)
-    const session = createNewSession(socket, room, readers)
-    socket.join(room)
-    console.log('join', socket.id)
+    const readers = getReadersInRoom(io, room);
+    const session = createNewSession(socket, room, readers);
+    socket.join(room);
+    console.log('join', socket.id);
     socket.emit(UserJoinSuccessMessage, {
       whoami: session,
       readers,
-    })
+    });
     if (!readingRoom) {
-      createReadingRoom(room)
+      createReadingRoom(room);
     } else {
-      socket.emit(ReadingRoomStateMessage, readingRoom)
+      socket.emit(ReadingRoomStateMessage, readingRoom);
     }
-    socket.to(room).emit(UserJoinedMessage, session)
-  })
+    socket.to(room).emit(UserJoinedMessage, session);
+  });
 
-  socket.on("disconnecting", () => {
-    leaveAllRooms(socket)
-  })
+  socket.on('disconnecting', () => {
+    leaveAllRooms(socket);
+  });
 
   socket.on(SetReadingRoomTextMessage, (data: string) => {
-    const user = sessions.get(socket)
-    if (!user) return
-    setReadingRoomData(user.room, prev => ({...prev, url: data }))
-    if (user) socket.to(user.room).emit(ReadingRoomTextMessage, { url: data, reader: user.id });
-  })
+    const user = sessions.get(socket);
+    if (!user) return;
+    setReadingRoomData(user.room, (prev) => ({ ...prev, url: data }));
+    if (user)
+      socket
+        .to(user.room)
+        .emit(ReadingRoomTextMessage, { url: data, reader: user.id });
+  });
 
   socket.on(ScrollPositionMessage, (data: ScrollPositionPayload) => {
-    const user = sessions.get(socket)
-    if (!user) return
-    console.log('set room scroll', data)
-    setReadingRoomData(user.room, prev => ({...prev, scrollPosition: data }))
+    const user = sessions.get(socket);
+    if (!user) return;
+    console.log('set room scroll', data);
+    setReadingRoomData(user.room, (prev) => ({
+      ...prev,
+      scrollPosition: data,
+    }));
     socket.to(user.room).emit(ScrollPositionMessage, data);
-  })
+  });
 
   socket.on(SetCursorPositionMessage, (data: SetCursorPositionPayload) => {
-    const user = sessions.get(socket)
-    if (user) socket.to(user.room).emit(CursorPositionMessage, {...data, id: user.id });
-  })
+    const user = sessions.get(socket);
+    if (user)
+      socket
+        .to(user.room)
+        .emit(CursorPositionMessage, { ...data, id: user.id });
+  });
 
   socket.on(SetLoadingMessage, (data: SetLoadingPayload) => {
     // maybe set room
-    const user = sessions.get(socket)
-    if (user) socket.to(user.room).emit(LoadingMessage, {...data, reader: user.id });
-  })
+    const user = sessions.get(socket);
+    if (user)
+      socket.to(user.room).emit(LoadingMessage, { ...data, reader: user.id });
+  });
 
   socket.on(SetLoadedMessage, (data: SetLoadedPayload) => {
-    const user = sessions.get(socket)
-    if (user) socket.to(user.room).emit(LoadedMessage, {...data, reader: user.id });
-  })
+    const user = sessions.get(socket);
+    if (user)
+      socket.to(user.room).emit(LoadedMessage, { ...data, reader: user.id });
+  });
+
+  socket.on(SetSelectionMessage, (data: SetSelectionPayload) => {
+    const user = sessions.get(socket);
+    if (user)
+      socket.to(user.room).emit(SelectionMessage, { ...data, id: user.id });
+  });
 });
 
 httpServer.listen(port, () => {
-  console.log('listening on port', port)
+  console.log('listening on port', port);
 });

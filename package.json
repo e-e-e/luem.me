@@ -3,11 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "yarn start:backend",
-    "build": "yarn build:frontend && yarn build:backend",
-    "start:backend": "cd server && yarn start",
-    "build:frontend": "cd site && yarn build",
-    "build:backend": "cd server && yarn build"
+    "start": "yarn workspace luem.me.server start",
+    "build": "yarn workspace luem.me.server build && yarn workspace luem.me.site build"
   },
   "engines": {
     "node": ">=15"
@@ -19,9 +16,21 @@
   ],
   "private": true,
   "license": "MIT",
-  "dependencies": {
-  },
   "devDependencies": {
-    "typescript": "^4.1.5"
+    "@typescript-eslint/eslint-plugin": "^5.17.0",
+    "@typescript-eslint/parser": "^5.17.0",
+    "assert": "^2.0.0",
+    "buffer": "^6.0.3",
+    "console-browserify": "^1.2.0",
+    "eslint": "^8.12.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "prettier": "^2.6.1",
+    "process": "^0.11.10",
+    "typescript": "^4.6.3",
+    "util": "^0.12.4"
+  },
+  "dependencies": {
+    "node-gyp": "^9.0.0"
   }
 }
