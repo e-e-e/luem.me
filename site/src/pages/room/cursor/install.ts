@@ -1,27 +1,20 @@
 import { LuemmeClient } from '../luemmeClient';
 import {
   CursorPositionPayload,
-  Position,
   SetCursorPositionPayload,
-} from '../../../../../common/src/messages';
+} from 'luem.me.common';
 import './cursor';
 import { Profiles } from '../profiles/install';
-
-function pageToPercentage(x: number, rect: DOMRect) {
-  return ((x - rect.x) / rect.width) * 100;
-}
-
-function percentageToPage(v: number, rect: DOMRect) {
-  return (v / 100) * rect.width + rect.x;
-}
+import { View } from '../pdfViewer/install';
+import { colorToHslString } from '../base/color';
+import {fromEvent} from "rxjs";
 
 export function installCursorSync(
-  container: HTMLElement,
+  view: View,
   luemme: LuemmeClient,
   profiles: Profiles
 ) {
   const cursors = new Map<string, Cursor>();
-  let rect: DOMRect | null = null;
   const ownCursorState: SetCursorPositionPayload = {
     x: 0,
     y: 0,
@@ -29,44 +22,27 @@ export function installCursorSync(
   };
 
   const updateCursor = (data: CursorPositionPayload) => {
-    const page = container.querySelector('#viewer .page');
-    if (!page) return;
-    const rect = page.getBoundingClientRect();
-    const scaledX = percentageToPage(data.x, rect);
-    const scaledY =
-      (data.y / 100) * container.scrollHeight - container.scrollTop;
+    const position = view.relativePosition.toPage(data);
+    if (!position) return;
     const cursor = cursors.get(data.id);
     const user =
       data.id === 'me'
         ? profiles.whoami.getValue()
         : profiles.readers.get(data.id);
+    if (!user) throw new Error('Attempting to update cursor without user');
     if (cursor) {
-      cursor.elementStyle.top = `${scaledY}px`;
-      cursor.elementStyle.left = `${scaledX}px`;
+      cursor.elementStyle.top = `${position.pageY}px`;
+      cursor.elementStyle.left = `${position.pageX}px`;
       cursor.pressed = data.pressed;
     } else {
       const cursor = document.createElement('lue-cursor') as Cursor;
-      cursor.elementStyle.top = `${scaledY}px`;
-      cursor.elementStyle.left = `${scaledX}px`;
+      cursor.elementStyle.top = `${position.pageY}px`;
+      cursor.elementStyle.left = `${position.pageX}px`;
       cursor.pressed = data.pressed;
-      if (user) {
-        cursor.color = `hsl(${user.color.h},${user.color.s}%,${user.color.l}%)`;
-      }
+      cursor.color = colorToHslString(user.color);
       cursors.set(data.id, cursor);
       document.body.append(cursor);
     }
-  };
-
-  const getRelativeMousePosition = (e: MouseEvent): Position | null => {
-    const page = container.querySelector('#viewer .page');
-    if (!page) return null;
-    rect = page.getBoundingClientRect();
-    const x = pageToPercentage(e.pageX, rect);
-    const y = ((e.pageY + container.scrollTop) / container.scrollHeight) * 100;
-    return {
-      x,
-      y,
-    };
   };
 
   window.addEventListener('mousedown', (e) => {
@@ -80,7 +56,7 @@ export function installCursorSync(
     updateCursor({ ...ownCursorState, id: 'me' });
   });
   window.addEventListener('mousemove', (e) => {
-    const position = getRelativeMousePosition(e);
+    const position = view.relativePosition.fromPage(e);
     if (!position) return;
     ownCursorState.x = position.x;
     ownCursorState.y = position.y;

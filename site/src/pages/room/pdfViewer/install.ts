@@ -11,6 +11,12 @@ import { distinctUntilChanged, first } from 'rxjs/operators';
 import { BehaviorSubject } from 'rxjs';
 
 import text from '../../../docs/text.pdf';
+import {
+  PageCoordinates,
+  pageCoordinatesToRelativePosition,
+  relativePositionToPageCoordinates,
+} from './coordinates';
+import { Position } from 'luem.me.common';
 
 const DEFAULT_SCALE_DELTA = 1.1;
 const MAX_SCALE = 4;
@@ -18,8 +24,14 @@ const MIN_SCALE = 0.2;
 
 export type State = 'initial' | 'loading' | 'loaded';
 
-export type PdfViewer = {
+export type View = {
   container: HTMLElement;
+  relativePosition: {
+    toPage: (position: Position) => PageCoordinates | null;
+    fromPage: (position: PageCoordinates) => Position | null;
+  };
+};
+export type PdfViewer = View & {
   load(url: string): Promise<void>;
   state: BehaviorSubject<State>;
 };
@@ -139,6 +151,10 @@ export function installPdfViewer(
     load: (url: string) => {
       luemme.sendReadingRoomText(url);
       return load(url);
+    },
+    relativePosition: {
+      toPage: relativePositionToPageCoordinates(container),
+      fromPage: pageCoordinatesToRelativePosition(container),
     },
     state: documentState,
     container,

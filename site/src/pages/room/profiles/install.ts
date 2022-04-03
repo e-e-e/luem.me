@@ -1,6 +1,6 @@
 import { LuemmeClient } from '../luemmeClient';
 import { BehaviorSubject } from 'rxjs';
-import { UserInfo } from '../../../../../common/src/messages';
+import { UserInfo } from 'luem.me.common';
 
 export type Profiles = {
   whoami: BehaviorSubject<UserInfo | null>;

@@ -1,13 +1,46 @@
 import { LuemmeClient } from '../luemmeClient';
-import { Rect, SelectionPayload } from '../../../../../common/src/messages';
+import { Color, Rect, SelectionPayload } from 'luem.me.common';
+import { Profiles } from '../profiles/install';
+import { colorToHslString } from '../base/color';
+import {View} from "../pdfViewer/install";
 
-export function installSelection(root: HTMLElement, luemme: LuemmeClient) {
+function domRectToRect(rect: DOMRect): Rect {
+  const { x, y, width, height } = rect;
+  return {
+    x,
+    y,
+    width,
+    height,
+  };
+}
+
+function createSelectionsContainer() {
   const selectionContainer = document.createElement('div');
   selectionContainer.style.position = 'absolute';
   selectionContainer.style.top = '0px';
   selectionContainer.style.left = '0px';
   selectionContainer.style.pointerEvents = 'none';
-  root.appendChild(selectionContainer);
+  return selectionContainer;
+}
+
+function drawSelectionRect(rect: Rect, color: Color) {
+  const select = document.createElement('div');
+  select.style.position = 'absolute';
+  select.style.top = `${scrollTop + rect.top}px`;
+  select.style.left = `${rect.left}px`;
+  select.style.width = `${rect.width}px`;
+  select.style.height = `${rect.height}px`;
+  select.style.background = colorToHslString(color, 0.5);
+  selectionContainer.appendChild(select);
+}
+
+export function installSelectionSync(
+  view: View,
+  luemme: LuemmeClient,
+  profiles: Profiles
+) {
+  const selectionContainer = createSelectionsContainer();
+  document.appendChild(selectionContainer);
 
   const updateSelection = (data: SelectionPayload) => {
     // createSelection
@@ -21,12 +54,7 @@ export function installSelection(root: HTMLElement, luemme: LuemmeClient) {
     if (selection?.rangeCount) {
       const rects = selection.getRangeAt(0).getClientRects();
       luemme.sendSelection({
-        rects: Array.from(rects).map((a) => ({
-          x: a.x,
-          y: a.y,
-          width: a.width,
-          height: a.height,
-        })),
+        rects: Array.from(rects, domRectToRect),
       });
       for (const rect of Array.from(rects)) {
         const select = document.createElement('div');
